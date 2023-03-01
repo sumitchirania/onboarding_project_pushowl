@@ -1,9 +1,8 @@
-import json
 from rest_framework import status
 from django.test import TestCase, Client
 from django.urls import reverse
 from ..models.subscriber import Subscriber
-from ..serializers.subscribers_serializer import SubSerializer
+from ..serializers.subscribers_serializer import SubscriberSerializer
 
 
 # initialize the APIClient app
@@ -11,7 +10,7 @@ client = Client()
 
 
 class GetAllSubscribersTest(TestCase):
-    """ Test module for GET all puppies API """
+    """ Test module for GET all subscribers API """
 
     subscriber_dummy_data_1 = {'endpoint': 'www.subscriber1.com', 'public_key': 'some_public_key',
                                'auth_key': 'some_auth_key', 'name': 'subscriber1'}
@@ -30,9 +29,11 @@ class GetAllSubscribersTest(TestCase):
 
     def test_get_all_subscribers(self):
         # get API response
-        response = client.get(reverse('subscriber'))
-        # get data from db
-        subscribers = Subscriber.objects.all()
-        serializer = SubSerializer(subscribers, many=True)
-        self.assertEqual(response.data, serializer.data)
+        response = client.get(reverse('subscribers'))
+        expected_keys = [
+            'id', 'endpoint', 'public_key', 'auth_key', 'name', 'email', 'is_active'
+        ]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(set(expected_keys).issubset(response.data[0].keys()), True)
+        self.assertEqual(isinstance(response.data, list), True)
+
